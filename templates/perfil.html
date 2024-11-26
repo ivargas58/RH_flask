@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del Empleado</title>
+    <!-- Incluir Bootstrap desde CDN sin integridad -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Mi Empresa</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('employee_dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Cerrar sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Perfil de Empleado</h1>
+        
+        <form method="POST">
+            <!-- Primer Nombre -->
+            <div class="mb-3">
+                <label for="first_name" class="form-label">Primer Nombre:</label>
+                <input type="text" name="first_name" id="first_name" class="form-control" value="{{ profile[1] if profile else '' }}" placeholder="Ingrese su primer nombre" required>
+            </div>
+
+            <!-- Apellido -->
+            <div class="mb-3">
+                <label for="last_name" class="form-label">Apellido:</label>
+                <input type="text" name="last_name" id="last_name" class="form-control" value="{{ profile[2] if profile else '' }}" placeholder="Ingrese su apellido" required>
+            </div>
+
+            <!-- Segundo Nombre -->
+            <div class="mb-3">
+                <label for="middle_name" class="form-label">Segundo Nombre:</label>
+                <input type="text" name="middle_name" id="middle_name" class="form-control" value="{{ profile[3] if profile else '' }}" placeholder="Ingrese su segundo nombre">
+            </div>
+
+            <!-- Fecha de Nacimiento -->
+            <div class="mb-3">
+                <label for="birth_date" class="form-label">Fecha de Nacimiento:</label>
+                <input type="date" name="birth_date" id="birth_date" class="form-control" value="{{ profile[4] if profile else '' }}" required>
+            </div>
+
+            <!-- Edad -->
+            <div class="mb-3">
+                <label for="age" class="form-label">Edad:</label>
+                <input type="number" name="age" id="age" class="form-control" value="{{ profile[5] if profile else '' }}" placeholder="Ingrese su edad" required>
+            </div>
+
+            <!-- Género -->
+            <div class="mb-3">
+                <label for="gender" class="form-label">Género:</label>
+                <select name="gender" id="gender" class="form-select" required>
+                    <option value="Masculino" {% if profile and profile[6] == 'Masculino' %}selected{% endif %}>Masculino</option>
+                    <option value="Femenino" {% if profile and profile[6] == 'Femenino' %}selected{% endif %}>Femenino</option>
+                    <option value="Otro" {% if profile and profile[6] == 'Otro' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-3">
+                <label for="phone" class="form-label">Teléfono:</label>
+                <input type="text" name="phone" id="phone" class="form-control" value="{{ profile[7] if profile else '' }}" placeholder="Ingrese su número de teléfono" required>
+            </div>
+
+            <!-- Departamento -->
+            <div class="mb-3">
+                <label for="department" class="form-label">Departamento:</label>
+                <input type="text" name="department" id="department" class="form-control" value="{{ profile[8] if profile else '' }}" placeholder="Ingrese su departamento" required>
+            </div>
+
+            <!-- Cargo -->
+            <div class="mb-3">
+                <label for="position" class="form-label">Cargo:</label>
+                <input type="text" name="position" id="position" class="form-control" value="{{ profile[9] if profile else '' }}" placeholder="Ingrese su cargo" required>
+            </div>
+
+            <!-- Modalidad -->
+            <div class="mb-3">
+                <label for="modality" class="form-label">Modalidad:</label>
+                <select name="modality" id="modality" class="form-select" required>
+                    <option value="Presencial" {% if profile and profile[10] == 'Presencial' %}selected{% endif %}>Presencial</option>
+                    <option value="Remoto" {% if profile and profile[10] == 'Remoto' %}selected{% endif %}>Remoto</option>
+                    <option value="Híbrido" {% if profile and profile[10] == 'Híbrido' %}selected{% endif %}>Híbrido</option>
+                </select>
+            </div>
+
+            <!-- Botón de guardar cambios -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Incluir Bootstrap JS desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

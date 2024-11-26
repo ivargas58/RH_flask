@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Empleados{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h3>Gestión de Empleados</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido Paterno</th>
+                <th>Apellido Materno</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Edad</th>
+                <th>Sexo</th>
+                <th>Teléfono</th>
+                <th>Departamento</th>
+                <th>Puesto</th>
+                <th>Modalidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employees %}
+            <tr>
+                <td>{{ emp[1] }}</td>
+                <td>{{ emp[2] }}</td>
+                <td>{{ emp[3] }}</td>
+                <td>{{ emp[4] }}</td>
+                <td>{{ emp[5] }}</td>
+                <td>{{ emp[6] }}</td>
+                <td>{{ emp[7] }}</td>
+                <td>{{ emp[8] }}</td>
+                <td>{{ emp[9] }}</td>
+                <td>{{ emp[10] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
