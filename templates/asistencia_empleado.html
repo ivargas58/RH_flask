@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencia de {{ employee_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3>Asistencia de {{ employee_name }}</h3>
+
+    <!-- Filtro por mes -->
+    <form method="get" action="{{ url_for('asistencia_empleado', employee_id=request.view_args['employee_id']) }}">
+        <label for="month">Filtrar por mes:</label>
+        <select id="month" name="month" onchange="this.form.submit()">
+            <option value="">Seleccionar mes</option>
+            <option value="01" {% if request.args.get('month') == '01' %}selected{% endif %}>Enero</option>
+            <option value="02" {% if request.args.get('month') == '02' %}selected{% endif %}>Febrero</option>
+            <option value="03" {% if request.args.get('month') == '03' %}selected{% endif %}>Marzo</option>
+            <option value="04" {% if request.args.get('month') == '04' %}selected{% endif %}>Abril</option>
+            <option value="05" {% if request.args.get('month') == '05' %}selected{% endif %}>Mayo</option>
+            <option value="06" {% if request.args.get('month') == '06' %}selected{% endif %}>Junio</option>
+            <option value="07" {% if request.args.get('month') == '07' %}selected{% endif %}>Julio</option>
+            <option value="08" {% if request.args.get('month') == '08' %}selected{% endif %}>Agosto</option>
+            <option value="09" {% if request.args.get('month') == '09' %}selected{% endif %}>Septiembre</option>
+            <option value="10" {% if request.args.get('month') == '10' %}selected{% endif %}>Octubre</option>
+            <option value="11" {% if request.args.get('month') == '11' %}selected{% endif %}>Noviembre</option>
+            <option value="12" {% if request.args.get('month') == '12' %}selected{% endif %}>Diciembre</option>
+        </select>
+    </form>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora de entrada</th>
+                <th>Hora de salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_data %}
+                <tr>
+                    <td>{{ record[0] }}</td>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] or "Pendiente" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

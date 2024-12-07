@@ -10,28 +10,46 @@
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="{{ url_for('index') }}">Aplicación</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if 'role' in session %}
                         {% if session['role'] == 'admin' %}
+                            <!-- Opciones para el administrador -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('empleados') }}">Empleados</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_asistencia') }}">Asistencia</a>
+                            </li>
                         {% elif session['role'] == 'employee' %}
+                            <!-- Opciones para el empleado -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('perfil') }}">Perfil</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('registrar_asistencia') }}">Asistencia</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('perfil') }}">Nómina</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('perfil') }}">Solicitud de Vacaciones</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('perfil') }}">Evaluación</a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('logout') }}">Cerrar sesión</a>
                         </li>
                     {% else %}
-                        <!-- Aquí mostramos solo el enlace de login en caso de no estar autenticado -->
-                        {% if request.endpoint != 'login' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
-                            </li>
-                        {% endif %}
+                        <!-- Mostrar solo el enlace de login si no está autenticado -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>
@@ -41,7 +59,7 @@
     <div class="container mt-4">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <div class="alert alert-danger">
+                <div class="alert alert-info">
                     {% for message in messages %}
                         <p>{{ message }}</p>
                     {% endfor %}
@@ -50,5 +68,8 @@
         {% endwith %}
         {% block content %}{% endblock %}
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

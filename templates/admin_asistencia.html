@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Detalles de Asistencia - Administrador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3>Registros de Asistencia</h3>
+    
+    <!-- Formulario para filtrar por mes -->
+    <form method="GET" action="/admin/asistencia" class="mb-4">
+        <label for="month" class="form-label">Filtrar por mes:</label>
+        <select id="month" name="month" class="form-select w-auto">
+            <option value="">Todos</option>
+            <option value="01">Enero</option>
+            <option value="02">Febrero</option>
+            <option value="03">Marzo</option>
+            <option value="04">Abril</option>
+            <option value="05">Mayo</option>
+            <option value="06">Junio</option>
+            <option value="07">Julio</option>
+            <option value="08">Agosto</option>
+            <option value="09">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre Completo</th>
+                <th>Departamento</th>
+                <th>Puesto</th>
+                <th>Fecha</th>
+                <th>Hora de Entrada</th>
+                <th>Hora de Salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_data %}
+                <tr>
+                    <td>{{ record[0] }}</td> <!-- Mostrar el nombre completo -->
+                    <td>{{ record[1] or "N/A" }}</td> <!-- Departamento -->
+                    <td>{{ record[2] or "N/A" }}</td> <!-- Puesto -->
+                    <td>{{ record[3] }}</td> <!-- Fecha -->
+                    <td>{{ record[4] }}</td> <!-- Hora de entrada -->
+                    <td>{{ record[5] or "Pendiente" }}</td> <!-- Hora de salida -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

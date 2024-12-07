@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Asegúrate de que esta clave esté definida
 
-# Configuración inicial de la base de datos
 def init_db():
+    # Conectar a la base de datos (se crea si no existe)
     conn = sqlite3.connect('models/database.db')
     cursor = conn.cursor()
     
@@ -15,7 +16,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            role TEXT NOT NULL
+            role TEXT NOT NULL,
+            full_name TEXT
         )
     ''')
     
@@ -37,16 +39,30 @@ def init_db():
         )
     ''')
     
-    conn.commit()
+    # Crear tabla para registrar asistencias
+    cursor.execute(''' 
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            date TEXT NOT NULL,
+            check_in TEXT NOT NULL,
+            check_out TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    ''')
     
-    # Insertar usuarios predeterminados si no existen
-    cursor.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", 
-                   ('admin', 'admin123', 'admin'))
-    cursor.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", 
-                   ('employee', 'employee123', 'employee'))
+    # Confirmar los cambios y cerrar la conexión
     conn.commit()
-    conn.close()
 
+    # Insertar usuarios predeterminados si no existen
+    cursor.execute("INSERT OR IGNORE INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)", 
+                   ('admin', 'admin123', 'admin', 'Administrador Sistema'))
+    cursor.execute("INSERT OR IGNORE INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)", 
+                   ('employee', 'employee123', 'employee', 'Empleado Ejemplo'))
+    conn.commit()
+
+    conn.close()
+    
 # Ruta inicial: Login
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -156,6 +172,176 @@ def empleados():
         conn.close()
         return render_template('empleados.html', employees=employees)
     return redirect(url_for('index'))
+
+@app.route('/asistencia', methods=['GET', 'POST'])
+def registrar_asistencia():
+    attendance_records = []  # Inicializa la lista vacía para evitar errores si algo falla
+
+    if request.method == 'POST':
+        check_in = request.form.get('check_in')
+        check_out = request.form.get('check_out')
+        user_id = session.get('user_id')  # Asegúrate de que el usuario esté autenticado
+        
+        if not check_in:
+            flash("Por favor, ingresa la hora de entrada.")
+            return redirect('/asistencia')
+
+        # Registrar asistencia
+        try:
+            conn = sqlite3.connect('models/database.db')
+            cursor = conn.cursor()
+            
+            # Registrar la asistencia con la fecha actual
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            cursor.execute(
+                '''
+                INSERT INTO attendance (user_id, date, check_in, check_out)
+                VALUES (?, ?, ?, ?)
+                ''',
+                (user_id, current_date, check_in, check_out)
+            )
+            conn.commit()
+            flash("Asistencia registrada exitosamente.")
+        except sqlite3.Error as e:
+            flash(f"Error al registrar asistencia: {e}")
+        finally:
+            conn.close()
+
+    # Recuperar registros de asistencia para el usuario autenticado
+    try:
+        conn = sqlite3.connect('models/database.db')
+        cursor = conn.cursor()
+        user_id = session.get('user_id')  # Asegúrate de obtener el ID del usuario desde la sesión
+        
+        cursor.execute(
+            '''
+            SELECT date, check_in, check_out
+            FROM attendance
+            WHERE user_id = ?
+            ORDER BY date DESC
+            ''',
+            (user_id,)
+        )
+        attendance_records = cursor.fetchall()
+    except sqlite3.Error as e:
+        flash(f"Error al cargar los registros de asistencia: {e}")
+    finally:
+        conn.close()
+
+    # Renderiza la plantilla y pasa los registros de asistencia
+    return render_template('asistencia.html', attendance_records=attendance_records)
+
+def get_attendance_data():
+    # Conectar a la base de datos
+    conn = sqlite3.connect('models/database.db')
+    cursor = conn.cursor()
+    
+    # Consulta SQL para obtener los datos
+    query = '''
+    SELECT 
+        p.first_name,
+        p.department,
+        p.position,
+        a.date,
+        a.check_in,
+        a.check_out
+    FROM attendance a
+    INNER JOIN users u ON a.user_id = u.id
+    LEFT JOIN employee_profiles p ON u.id = p.user_id
+    '''
+    
+    cursor.execute(query)
+    records = cursor.fetchall()  # Obtener todos los resultados de la consulta
+    conn.close()
+    
+    return records
+
+@app.route('/admin/asistencia')
+def admin_asistencia():
+    if 'role' in session and session['role'] == 'admin':
+        conn = sqlite3.connect('models/database.db')
+        cursor = conn.cursor()
+
+        page = request.args.get('page', 1, type=int)  # Obtener página de los parámetros
+        month_filter = request.args.get('month')
+
+        query = '''
+        SELECT 
+            COALESCE(p.first_name, '') || ' ' || COALESCE(p.middle_name, '') || ' ' || COALESCE(p.last_name, '') AS full_name,
+            p.department,
+            p.position,
+            a.date,
+            a.check_in,
+            a.check_out
+        FROM attendance a
+        INNER JOIN users u ON a.user_id = u.id
+        LEFT JOIN employee_profiles p ON u.id = p.user_id
+'''
+
+        if month_filter:
+            query += ' WHERE strftime("%m", a.date) = ? ORDER BY a.date DESC LIMIT 10 OFFSET ?'
+            cursor.execute(query, (month_filter, (page - 1) * 10))
+        else:
+            query += ' ORDER BY a.date DESC LIMIT 10 OFFSET ?'
+            cursor.execute(query, ((page - 1) * 10,))
+
+        attendance_data = cursor.fetchall()
+        conn.close()
+
+        return render_template('admin_asistencia.html', attendance_data=attendance_data, page=page)
+
+@app.route('/admin/asistencia/<int:employee_id>', methods=['GET', 'POST'])
+def asistencia_empleado(employee_id):
+    if 'role' in session and session['role'] == 'admin':
+        conn = sqlite3.connect('models/database.db')
+        cursor = conn.cursor()
+
+        # Si se seleccionó un mes, filtramos por ese mes
+        month_filter = request.args.get('month')  # El mes seleccionado en el filtro (opcional)
+        if month_filter:
+            query = '''
+                SELECT a.date, a.check_in, a.check_out 
+                FROM attendance a
+                WHERE a.user_id = ? AND strftime('%m', a.date) = ?
+                ORDER BY a.date DESC
+            '''
+            cursor.execute(query, (employee_id, month_filter))
+        else:
+            query = '''
+                SELECT a.date, a.check_in, a.check_out 
+                FROM attendance a
+                WHERE a.user_id = ?
+                ORDER BY a.date DESC
+            '''
+            cursor.execute(query, (employee_id,))
+
+        attendance_data = cursor.fetchall()
+        conn.close()
+
+        # Obtener el nombre completo del empleado para mostrarlo en la vista
+        conn = sqlite3.connect('models/database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT full_name FROM users WHERE id = ?', (employee_id,))
+        employee_name = cursor.fetchone()[0]
+        conn.close()
+
+        return render_template('asistencia_empleado.html', attendance_data=attendance_data, employee_name=employee_name)
+    return redirect(url_for('index'))
+
+def add_full_name_column():
+    conn = sqlite3.connect('models/database.db')  # Asegúrate de usar la ruta correcta
+    cursor = conn.cursor()
+    try:
+        cursor.execute('ALTER TABLE users ADD COLUMN full_name TEXT')
+        conn.commit()
+        print("Columna 'full_name' agregada correctamente.")
+    except sqlite3.OperationalError as e:
+        print(f"Error: {e}")
+    finally:
+        conn.close()
+
+add_full_name_column()
+
 
 # Ruta para cerrar sesión
 @app.route('/logout')

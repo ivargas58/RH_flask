@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Detalles de Asistencia{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3>Asistencia de {{ employee_info[0] }}</h3>
+    <p>Departamento: {{ employee_info[1] }}</p>
+    <p>Puesto: {{ employee_info[2] }}</p>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora de entrada</th>
+                <th>Hora de salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_data %}
+                <tr>
+                    <td>{{ record[0] }}</td> <!-- Fecha -->
+                    <td>{{ record[1] }}</td> <!-- Hora de entrada -->
+                    <td>{{ record[2] or "Pendiente" }}</td> <!-- Hora de salida -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

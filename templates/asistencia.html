@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Registrar Asistencia{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h3>Registrar Asistencia</h3>
+    <form method="POST" action="/asistencia">
+        <label for="check_in">Hora de Entrada:</label>
+        <input type="time" id="check_in" name="check_in" required>
+        <label for="check_out">Hora de Salida:</label>
+        <input type="time" id="check_out" name="check_out">
+        <button type="submit">Registrar Asistencia</button>
+    </form>
+    
+
+    <h4 class="mt-4">Historial de asistencia</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora de entrada</th>
+                <th>Hora de salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record[0] }}</td>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] or "Pendiente" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
